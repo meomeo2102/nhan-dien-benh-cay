@@ -45,4 +45,4 @@ demo = gr.Interface(
 
 # 5. Khởi chạy
 if __name__ == "__main__":
-   demo.launch(server_name="0.0.0.0", server_port=10000 # share=True để tạo link chia sẻ public
+   demo.launch(server_name="0.0.0.0", server_port=10000) # share=True để tạo link chia sẻ public
