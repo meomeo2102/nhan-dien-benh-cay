@@ -1,4 +1,4 @@
-tensorflow, 
-numpy, 
-Pillow, 
+tensorflow
+numpy
+Pillow
 gradio
