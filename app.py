@@ -3,46 +3,103 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 
-# 1. Tải mô hình AI (file phải nằm cùng thư mục với app.py)
+# 1. Tải mô hình AI
 print("Đang tải mô hình...")
 model = tf.keras.models.load_model('best_plant_model.keras')
 
-# 2. Danh sách 38 loại bệnh
+# 2. Danh sách 38 loại bệnh (Đã được Việt hóa và định dạng đẹp mắt)
 class_names = [
-    'Apple___Apple_scab', 'Apple___Black_rot', 'Apple___Cedar_apple_rust', 'Apple___healthy',
-    'Blueberry___healthy', 'Cherry_(including_sour)___Powdery_mildew', 'Cherry_(including_sour)___healthy',
-    'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot', 'Corn_(maize)___Common_rust_',
-    'Corn_(maize)___Northern_Leaf_Blight', 'Corn_(maize)___healthy', 'Grape___Black_rot',
-    'Grape___Esca_(Black_Measles)', 'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)', 'Grape___healthy',
-    'Orange___Haunglongbing_(Citrus_greening)', 'Peach___Bacterial_spot', 'Peach___healthy',
-    'Pepper,_bell___Bacterial_spot', 'Pepper,_bell___healthy', 'Potato___Early_blight',
-    'Potato___Late_blight', 'Potato___healthy', 'Raspberry___healthy', 'Soybean___healthy',
-    'Squash___Powdery_mildew', 'Strawberry___Leaf_scorch', 'Strawberry___healthy',
-    'Tomato___Bacterial_spot', 'Tomato___Early_blight', 'Tomato___Late_blight', 'Tomato___Leaf_Mold',
-    'Tomato___Septoria_leaf_spot', 'Tomato___Spider_mites Two-spotted_spider_mite', 'Tomato___Target_Spot',
-    'Tomato___Tomato_Yellow_Leaf_Curl_Virus', 'Tomato___Tomato_mosaic_virus', 'Tomato___healthy'
+    'Táo - Bệnh vảy đen (Apple scab)', 
+    'Táo - Bệnh thối đen (Black rot)', 
+    'Táo - Bệnh gỉ sắt (Cedar apple rust)', 
+    'Táo - Khỏe mạnh (Healthy)',
+    'Việt quất - Khỏe mạnh (Healthy)', 
+    'Anh đào - Bệnh phấn trắng (Powdery mildew)', 
+    'Anh đào - Khỏe mạnh (Healthy)',
+    'Ngô - Bệnh đốm xám (Cercospora leaf spot)', 
+    'Ngô - Bệnh gỉ sắt (Common rust)',
+    'Ngô - Bệnh cháy lá (Northern Leaf Blight)', 
+    'Ngô - Khỏe mạnh (Healthy)', 
+    'Nho - Bệnh thối đen (Black rot)',
+    'Nho - Bệnh sởi đen (Esca - Black Measles)', 
+    'Nho - Bệnh đốm lá (Leaf blight)', 
+    'Nho - Khỏe mạnh (Healthy)',
+    'Cam/Chanh - Bệnh vàng lá gân xanh (Citrus greening)', 
+    'Đào - Bệnh đốm vi khuẩn (Bacterial spot)', 
+    'Đào - Khỏe mạnh (Healthy)',
+    'Ớt chuông - Bệnh đốm vi khuẩn (Bacterial spot)', 
+    'Ớt chuông - Khỏe mạnh (Healthy)', 
+    'Khoai tây - Bệnh sương mai sớm (Early blight)',
+    'Khoai tây - Bệnh sương mai muộn (Late blight)', 
+    'Khoai tây - Khỏe mạnh (Healthy)', 
+    'Mâm xôi - Khỏe mạnh (Healthy)', 
+    'Đậu nành - Khỏe mạnh (Healthy)',
+    'Bí đỏ - Bệnh phấn trắng (Powdery mildew)', 
+    'Dâu tây - Bệnh cháy lá (Leaf scorch)', 
+    'Dâu tây - Khỏe mạnh (Healthy)',
+    'Cà chua - Bệnh đốm vi khuẩn (Bacterial spot)', 
+    'Cà chua - Bệnh đốm vòng (Early blight)', 
+    'Cà chua - Bệnh sương mai muộn (Late blight)', 
+    'Cà chua - Bệnh nấm lá (Leaf Mold)',
+    'Cà chua - Bệnh đốm lá Septoria (Septoria leaf spot)', 
+    'Cà chua - Nhện đỏ (Spider mites)', 
+    'Cà chua - Bệnh đốm đích (Target Spot)',
+    'Cà chua - Bệnh xoăn vàng lá (Yellow Leaf Curl Virus)', 
+    'Cà chua - Bệnh khảm (Mosaic virus)', 
+    'Cà chua - Khỏe mạnh (Healthy)'
 ]
 
-# 3. Hàm xử lý ảnh và dự đoán
+# 3. Hàm xử lý ảnh và dự đoán tích hợp cảnh báo
 def predict_disease(img):
-    img = img.resize((224, 224))
-    img_array = tf.keras.utils.img_to_array(img)
+    if img is None:
+        return "Vui lòng tải lên một hình ảnh."
+
+    # Tiền xử lý ảnh
+    img_resized = img.resize((224, 224))
+    img_array = tf.keras.utils.img_to_array(img_resized)
     img_array = tf.expand_dims(img_array, 0)
     
+    # Dự đoán
     predictions = model.predict(img_array)[0]
+    
+    # Lấy ra xác suất cao nhất
+    max_confidence = np.max(predictions)
+    
+    # CẢNH BÁO: Nếu xác suất cao nhất mà dưới 45% -> Khả năng cao không phải là lá cây
+    if max_confidence < 0.45:
+        return {"⚠️ Lỗi: Hình ảnh không hợp lệ (Không phải lá cây nông nghiệp)": float(1.0)}
+
+    # Trả về kết quả bình thường nếu xác suất cao
     confidences = {class_names[i]: float(predictions[i]) for i in range(len(class_names))}
     return confidences
 
-# 4. Cấu hình giao diện Gradio
+# 4. CSS
+custom_css = """
+    .gradio-container {
+        font-family: 'Arial', sans-serif;
+    }
+    h1 {
+        color: #2e7d32; /* Màu xanh lá cây đậm */
+        text-align: center;
+    }
+    p {
+        text-align: center;
+        font-size: 16px;
+    }
+    .footer {display: none !important} /* Ẩn footer của Gradio cho chuyên nghiệp */
+"""
+
 demo = gr.Interface(
     fn=predict_disease,
-    inputs=gr.Image(type="pil"),
-    outputs=gr.Label(num_top_classes=3),
-    title="🌱 Trợ lý AI Chẩn Đoán Bệnh Cây Trồng",
-    description="Chụp hoặc tải lên hình ảnh lá cây bị bệnh để AI phân tích và chẩn đoán.",
-    theme="default"
+    inputs=gr.Image(type="pil", label="Tải ảnh hoặc chụp ảnh từ Camera"),
+    outputs=gr.Label(num_top_classes=3, label="Phân tích và Chẩn đoán"),
+    title="🌱 HỆ THỐNG TRÍ TUỆ NHÂN TẠO CHẨN ĐOÁN BỆNH CÂY TRỒNG",
+    description="<b>Hướng dẫn:</b> Hãy tải lên hoặc dùng điện thoại chụp ảnh lá cây (Cà chua, Ngô, Khoai tây...). Hệ thống AI (MobileNetV2) sẽ phân tích tổn thương và trả về 3 kết quả có khả năng cao nhất.",
+    theme=gr.themes.Soft(primary_hue="green", neutral_hue="slate"), 
+    css=custom_css,
+    allow_flagging="never" 
 )
 
 # 5. Khởi chạy
 if __name__ == "__main__":
-   demo.launch(server_name="0.0.0.0", server_port=10000) # share=True để tạo link chia sẻ public
+    demo.launch(server_name="0.0.0.0", server_port=10000)
