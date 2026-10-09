@@ -91,15 +91,14 @@ custom_css = """
 
 demo = gr.Interface(
     fn=predict_disease,
-    inputs=gr.Image(type="pil", label="Tải ảnh hoặc chụp ảnh từ Camera"),
+    inputs=gr.Image(type="pil", sources=["upload", "webcam"], label="Tải ảnh hoặc chụp trực tiếp từ Camera"),
     outputs=gr.Label(num_top_classes=3, label="Phân tích và Chẩn đoán"),
     title="🌱 HỆ THỐNG TRÍ TUỆ NHÂN TẠO CHẨN ĐOÁN BỆNH CÂY TRỒNG",
-    description="<b>Hướng dẫn:</b> Hãy tải lên hoặc dùng điện thoại chụp ảnh lá cây (Cà chua, Ngô, Khoai tây...). Hệ thống AI (MobileNetV2) sẽ phân tích tổn thương và trả về 3 kết quả có khả năng cao nhất.",
-    theme=gr.themes.Soft(primary_hue="green", neutral_hue="slate"), 
+    description="<b>Hướng dẫn:</b> Bấm vào nút Camera để chụp trực tiếp hoặc tải lên hình ảnh lá cây (Cà chua, Ngô, Khoai tây...). Hệ thống AI (MobileNetV2) sẽ phân tích tổn thương và trả về 3 kết quả có khả năng cao nhất.",
+    theme=gr.themes.Soft(primary_hue="green", neutral_hue="slate"),
     css=custom_css,
-    allow_flagging="never" 
+    allow_flagging="never"
 )
-
 # 5. Khởi chạy
 if __name__ == "__main__":
     demo.launch(server_name="0.0.0.0", server_port=10000)
