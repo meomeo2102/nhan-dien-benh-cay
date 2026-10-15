@@ -108,16 +108,17 @@ custom_css = """
     footer { display: none !important; }
 """
 
-with gr.Blocks(css=custom_css, theme=gr.themes.Soft(primary_hue="green", neutral_hue="slate")) as demo:
+# FIX 1: Loại bỏ theme và css ở đây để tương thích Gradio 6.0
+with gr.Blocks() as demo:
     gr.Markdown("# 🌱 AI CHẨN ĐOÁN BỆNH CÂY TRỒNG (MOBILE APP)")
     gr.Markdown("**Hướng dẫn:** Dùng điện thoại chụp mặt lá bị tổn thương. Hệ thống sẽ phân tích, lập phác đồ điều trị và xuất báo cáo kỹ thuật.")
 
     with gr.Row():
         with gr.Column(scale=1):
             with gr.Tabs():
-                # CHỈNH SỬA Ở ĐÂY: Thêm mirror_webcam=False cho chuẩn điện thoại
                 with gr.Tab("📷 Chụp bằng Điện thoại"):
-                    cam_input = gr.Image(type="pil", sources=["webcam"], mirror_webcam=False, label="Camera sau")
+                    # FIX 2: Loại bỏ hoàn toàn tham số mirror_webcam
+                    cam_input = gr.Image(type="pil", sources=["webcam"], label="Camera sau")
                     cam_btn = gr.Button("🔍 Quét Camera & Lập Báo Cáo", variant="primary")
                     
                 with gr.Tab("🖼️ Tải ảnh từ Thư viện"):
@@ -137,4 +138,10 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft(primary_hue="green", neutral
 # 5. KHỞI CHẠY MÁY CHỦ
 # ==========================================
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=10000)
+    # FIX 3: Dời theme và css xuống hàm launch()
+    demo.launch(
+        server_name="0.0.0.0", 
+        server_port=10000,
+        css=custom_css,
+        theme=gr.themes.Soft(primary_hue="green", neutral_hue="slate")
+    )
